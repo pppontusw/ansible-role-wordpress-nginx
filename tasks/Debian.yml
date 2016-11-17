@@ -1,0 +1,20 @@
+- name: install dependencies
+  apt: name={{ item }} state=present
+  with_items:
+    - mysql-server
+    - python-mysqldb
+    - php5
+    - php5-fpm
+    - php5-mcrypt
+    - php5-mysql
+    - php5-gd
+    - nginx
+    - curl
+    
+- name: Create Mysql configuration file
+  template: src={{ansible_os_family}}/my.cnf.j2 dest=/etc/my.cnf
+  notify: 
+    - restart mysql
+
+- name: Start Mysql Service
+  service: name=mysql state=started enabled=yes

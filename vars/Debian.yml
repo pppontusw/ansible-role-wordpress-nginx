@@ -1,0 +1,4 @@
+nginx_path: /etc/nginx/sites-enabled/default
+php_fpm_path: /etc/php5/fpm/pool.d
+php_fpm_service_name: php5-fpm
+nginx_user: www-data

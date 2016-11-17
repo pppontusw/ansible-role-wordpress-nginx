@@ -1,0 +1,66 @@
+- name: create ssl base folder
+  file: 
+    path: "{{wp_ssl_path}}" 
+    state: directory
+    owner: "{{nginx_user}}"
+    group: "{{nginx_user}}"
+    mode: 0600
+    setype: httpd_config_t
+  tags: ssl
+
+- name: check if dhparams are generated
+  stat: 
+    path: "{{wp_ssl_path}}/dhparams.pem"
+  register: st
+  tags: ssl
+
+- name: generate dhparams
+  shell: 'openssl dhparam -out {{wp_ssl_path}}/dhparams.pem 2048'
+  when: st.stat.exists == False
+  notify:
+  - restart nginx
+  tags: ssl
+
+- name: chown dhparams
+  file: 
+    path: "{{wp_ssl_path}}/dhparams.pem" 
+    state: file
+    owner: "{{nginx_user}}"
+    group: "{{nginx_user}}"
+    mode: 0600
+    setype: httpd_config_t
+  notify:
+  - restart nginx
+  tags: ssl
+
+- name: create ssl folders
+  file: 
+    path: "{{wp_ssl_path}}/{{server_hostname}}" 
+    state: directory
+    owner: "{{nginx_user}}"
+    group: "{{nginx_user}}"
+    mode: 0600
+    setype: httpd_config_t
+  tags: ssl
+
+- name: copy ssl-certificates
+  copy: 
+    content: "{{wp_ssl_cert}}" 
+    dest: "{{wp_ssl_path}}/{{ server_hostname }}/cert.pem"
+    owner: "{{nginx_user}}"
+    group: "{{nginx_user}}"
+    mode: 0600
+    setype: httpd_config_t
+  when: wp_ssl_cert is defined
+  tags: ssl
+
+- name: copy ssl-keys
+  copy: 
+    content: "{{wp_ssl_key}}" 
+    dest: "{{wp_ssl_path}}/{{ server_hostname }}/key.pem"
+    owner: "{{nginx_user}}"
+    group: "{{nginx_user}}"
+    mode: 0600
+    setype: httpd_config_t
+  when: wp_ssl_key is defined
+  tags: ssl
